@@ -1,0 +1,43 @@
+# Docker Compose - Orchestrates multiple containers
+# Run with: docker-compose up -d
+
+version: '3.8'
+
+services:
+  # ============================================
+  # MongoDB Database
+  # ============================================
+  mongodb:
+    image: mongo:6.0                    # Official MongoDB 6.0 image
+    container_name: mongodb
+    ports:
+      - "27017:27017"                   # Expose MongoDB port to host
+    volumes:
+      - mongodb_data:/data/db           # Persist data between restarts
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ============================================
+  # Store Parcels API (optional - for later)
+  # ============================================
+  # Uncomment when you're ready to run the app in Docker
+  #
+  # storeparcel-api:
+  #   build: .
+  #   container_name: storeparcel-api
+  #   ports:
+  #     - "8080:8080"
+  #   environment:
+  #     - SPRING_PROFILES_ACTIVE=docker
+  #     - SPRING_DATA_MONGODB_URI=mongodb://mongodb:27017
+  #     - SPRING_DATA_MONGODB_DATABASE=store_parcels_db
+  #   depends_on:
+  #     mongodb:
+  #       condition: service_healthy
+
+# Named volume - persists data even if container is deleted
+volumes:
+  mongodb_data:
