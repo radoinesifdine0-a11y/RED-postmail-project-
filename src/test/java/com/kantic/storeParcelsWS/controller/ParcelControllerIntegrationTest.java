@@ -7,6 +7,7 @@ import com.kantic.storeParcelsWS.model.StorageLocation;
 import com.kantic.storeParcelsWS.repository.ParcelRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -27,10 +28,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 /**
  * Integration tests for ParcelController with real MongoDB via Testcontainers.
+ * These tests are skipped in CI (GitHub Actions) where MongoDB runs as a service container.
+ * In CI, the unit tests provide sufficient coverage.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
 @Testcontainers
+@DisabledIfEnvironmentVariable(named = "CI", matches = "true", disabledReason = "Testcontainers not needed in CI - MongoDB service container is used")
 class ParcelControllerIntegrationTest {
 
     @Container
