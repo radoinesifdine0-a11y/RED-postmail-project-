@@ -123,4 +123,11 @@ public class Parcel {
      */
     @Field("storeParcelStorageLocation")
     private StorageLocation storageLocation;
+
+    /**
+     * Soft delete flag. Deleted parcels are excluded from searches.
+     * Default is false for new parcels.
+     */
+    @Builder.Default
+    private Boolean deleted = false;
 }

@@ -73,6 +73,9 @@ public class ParcelRepositoryCustomImpl implements ParcelRepositoryCustom {
             }
         }
 
+        // Exclude deleted parcels from search results
+        criteriaList.add(Criteria.where("deleted").ne(true));
+
         // Combine criteria with AND logic
         if (!criteriaList.isEmpty()) {
             criteria = new Criteria().andOperator(criteriaList.toArray(new Criteria[0]));

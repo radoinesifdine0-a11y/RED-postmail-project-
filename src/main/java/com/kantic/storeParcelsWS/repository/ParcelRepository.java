@@ -31,6 +31,12 @@ public interface ParcelRepository extends MongoRepository<Parcel, String>, Parce
     Optional<Parcel> findByParcelId(String parcelId);
 
     /**
+     * Find parcel by ID excluding deleted parcels.
+     * Used for update/delete operations where we only want active parcels.
+     */
+    Optional<Parcel> findByParcelIdAndDeletedFalse(String parcelId);
+
+    /**
      * Check if a parcel exists with this ID
      * Spring auto-generates: db.parcels.countDocuments({parcelId: ?}) > 0
      */

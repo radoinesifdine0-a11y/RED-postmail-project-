@@ -2,6 +2,7 @@ package com.kantic.storeParcelsWS.controller;
 
 import com.kantic.storeParcelsWS.dto.ParcelResponseDTO;
 import com.kantic.storeParcelsWS.dto.SearchRequestDTO;
+import com.kantic.storeParcelsWS.dto.UpdateParcelRequestDTO;
 import com.kantic.storeParcelsWS.service.ParcelService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -34,23 +35,10 @@ public class ParcelController {
 
     private final ParcelService parcelService;
 
-    /**
-     * Health check endpoint.
-     *
-     * Used by:
-     * - Docker to check container health
-     * - Load balancers to route traffic
-     * - Monitoring systems
-     *
-     * GET /store_parcels/health
-     */
-    @GetMapping("/health")
-    public ResponseEntity<Map<String, Object>> health() {
-        Map<String, Object> response = new HashMap<>();
-        response.put("status", "UP");
-        response.put("timestamp", System.currentTimeMillis());
-        return ResponseEntity.ok(response);
-    }
+    // Note: Health endpoints moved to HealthController
+    // - GET /health       → Basic health check
+    // - GET /health/live  → Liveness probe
+    // - GET /health/ready → Readiness probe (MongoDB check)
 
     /**
      * Search parcels with criteria, sorting, and pagination.
@@ -181,5 +169,48 @@ public class ParcelController {
         ));
 
         return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Update an existing parcel.
+     *
+     * PUT /store_parcels/parcel/{parcelId}
+     *
+     * Updates parcel fields based on the request body.
+     * Status transitions are validated against the state machine.
+     *
+     * @param parcelId The parcel ID to update
+     * @param request The update request with fields to modify
+     * @return 200 OK with updated parcel, 400 if invalid transition, 404 if not found
+     */
+    @PutMapping("/parcel/{parcelId}")
+    public ResponseEntity<ParcelResponseDTO> updateParcel(
+            @PathVariable String parcelId,
+            @Valid @RequestBody UpdateParcelRequestDTO request) {
+
+        log.info("PUT /store_parcels/parcel/{} - Update request received", parcelId);
+
+        ParcelResponseDTO updated = parcelService.updateParcel(parcelId, request);
+        return ResponseEntity.ok(updated);
+    }
+
+    /**
+     * Soft delete a parcel.
+     *
+     * DELETE /store_parcels/parcel/{parcelId}
+     *
+     * Only parcels with CANCELLED or RETURNED status can be deleted.
+     * Deleted parcels are excluded from search results.
+     *
+     * @param parcelId The parcel ID to delete
+     * @return 204 No Content on success, 400 if not deletable, 404 if not found
+     */
+    @DeleteMapping("/parcel/{parcelId}")
+    public ResponseEntity<Void> deleteParcel(@PathVariable String parcelId) {
+
+        log.info("DELETE /store_parcels/parcel/{} - Delete request received", parcelId);
+
+        parcelService.deleteParcel(parcelId);
+        return ResponseEntity.noContent().build();
     }
 }
