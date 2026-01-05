@@ -111,8 +111,7 @@ jobs:
           region: ${{ env.REGION }}
           image: ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.SERVICE_NAME }}:${{ github.sha }}
           flags: |
-            --vpc-connector=store-parcels-connector
-            --vpc-egress=all-traffic
+            --allow-unauthenticated
             --min-instances=0
             --max-instances=1
             --memory=512Mi
