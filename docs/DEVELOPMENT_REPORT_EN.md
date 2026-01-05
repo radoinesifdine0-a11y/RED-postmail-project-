@@ -1379,6 +1379,220 @@ curl -X POST $CLOUD_RUN_URL/store_parcels/search \
 
 ---
 
+## Part 5: Production Deployment - The Real Journey 🚀
+
+**Date**: January 5, 2026
+
+### Achievement Unlocked: Cloud Deployment Master! 🏆
+
+We successfully deployed the API to production on Google Cloud Platform with MongoDB Atlas!
+
+---
+
+### Step 35: GCP Account & Project Setup ✅
+
+**Tools Used:**
+- **Google Cloud CLI (gcloud)** - Command-line tool to manage GCP resources
+- **Homebrew** - Package manager for macOS to install gcloud
+
+**Commands executed:**
+```bash
+# Install Google Cloud CLI
+brew install --cask google-cloud-sdk
+
+# Login to GCP
+gcloud auth login
+
+# Create a new project
+gcloud projects create store-parcels-app --name="Store Parcels API"
+
+# Set as default project
+gcloud config set project store-parcels-app
+
+# Link billing account
+gcloud billing projects link store-parcels-app --billing-account=XXXXXX
+```
+
+**Achievement:** 🎖️ *GCP Explorer* - Created your first GCP project!
+
+---
+
+### Step 36: Enable GCP APIs ✅
+
+**What are APIs in GCP?**
+APIs are services you "turn on" to use specific features. Think of them as unlocking abilities in a game.
+
+**APIs enabled:**
+| API | Purpose | Game Analogy |
+|-----|---------|--------------|
+| `run.googleapis.com` | Cloud Run (serverless containers) | 🏃 Sprint ability |
+| `artifactregistry.googleapis.com` | Store Docker images | 📦 Inventory system |
+| `cloudbuild.googleapis.com` | Build containers | 🔨 Crafting table |
+| `iam.googleapis.com` | Manage permissions | 🔐 Key master |
+
+```bash
+gcloud services enable \
+  run.googleapis.com \
+  artifactregistry.googleapis.com \
+  cloudbuild.googleapis.com \
+  iam.googleapis.com
+```
+
+**Achievement:** 🎖️ *API Unlocker* - Enabled 4 cloud services!
+
+---
+
+### Step 37: Service Account for GitHub Actions ✅
+
+**What is a Service Account?**
+A "robot user" that GitHub Actions uses to deploy to GCP. It has specific permissions and a JSON key file for authentication.
+
+**Commands:**
+```bash
+# Create the robot account
+gcloud iam service-accounts create github-actions \
+  --display-name="GitHub Actions"
+
+# Give it permissions
+gcloud projects add-iam-policy-binding store-parcels-app \
+  --member="serviceAccount:github-actions@store-parcels-app.iam.gserviceaccount.com" \
+  --role="roles/run.admin"
+
+gcloud projects add-iam-policy-binding store-parcels-app \
+  --member="serviceAccount:github-actions@store-parcels-app.iam.gserviceaccount.com" \
+  --role="roles/artifactregistry.writer"
+
+# Create JSON key
+gcloud iam service-accounts keys create ~/gcp-sa-key.json \
+  --iam-account=github-actions@store-parcels-app.iam.gserviceaccount.com
+```
+
+**Achievement:** 🎖️ *Security Architect* - Created secure service account!
+
+---
+
+### Step 38: GitHub Secrets Configuration ✅
+
+**What are GitHub Secrets?**
+Encrypted environment variables that GitHub Actions can use. They're hidden from logs and can't be read by anyone.
+
+**Secrets added via GitHub CLI:**
+```bash
+# Install and login to GitHub CLI
+gh auth login
+
+# Add secrets
+gh secret set GCP_PROJECT_ID --body "store-parcels-app"
+gh secret set GCP_SA_KEY < ~/gcp-sa-key.json
+```
+
+| Secret | Purpose |
+|--------|---------|
+| `GCP_PROJECT_ID` | Identifies your GCP project |
+| `GCP_SA_KEY` | JSON credentials for authentication |
+
+**Achievement:** 🎖️ *Secret Keeper* - Secured your credentials!
+
+---
+
+### Step 39: Artifact Registry Repository ✅
+
+**What is Artifact Registry?**
+Google's container registry - like a warehouse where you store Docker images before deploying them.
+
+```bash
+gcloud artifacts repositories create store-parcels-repo \
+  --repository-format=docker \
+  --location=europe-west1 \
+  --description="Docker repository for Store Parcels API"
+```
+
+**Achievement:** 🎖️ *Container Curator* - Created your Docker warehouse!
+
+---
+
+### Step 40: MongoDB Atlas Setup ✅
+
+**What is MongoDB Atlas?**
+Cloud-hosted MongoDB database. Free tier (M0) gives you 512MB storage - perfect for learning!
+
+**Setup steps:**
+1. Created account at mongodb.com/cloud/atlas
+2. Created free M0 cluster in `europe-west1` (Belgium)
+3. Created database user: `store-parcels-user`
+4. Whitelisted IP: `0.0.0.0/0` (allow all - for simplicity)
+5. Got connection string
+
+**Connection string format:**
+```
+mongodb+srv://USERNAME:PASSWORD@cluster.xxxxx.mongodb.net/DATABASE
+```
+
+**Achievement:** 🎖️ *Database Administrator* - Set up cloud database!
+
+---
+
+### Step 41: Cloud Run Deployment ✅
+
+**What is Cloud Run?**
+Serverless container platform. You give it a Docker image, it runs it. You only pay when requests come in.
+
+**Final deployment command (via GitHub Actions):**
+```bash
+gcloud run deploy store-parcels-api \
+  --image europe-west1-docker.pkg.dev/store-parcels-app/store-parcels-repo/store-parcels-api:latest \
+  --region europe-west1 \
+  --allow-unauthenticated \
+  --set-env-vars="SPRING_DATA_MONGODB_URI=mongodb+srv://..." \
+  --min-instances=0 \
+  --max-instances=1 \
+  --memory=512Mi
+```
+
+**Achievement:** 🎖️ *Cloud Deployer* - Deployed to production!
+
+---
+
+### Production URLs
+
+| Endpoint | URL |
+|----------|-----|
+| **Base URL** | `https://store-parcels-api-1065577871620.europe-west1.run.app` |
+| Health Check | `/store_parcels/health` |
+| Readiness | `/store_parcels/health/ready` |
+| Search | `POST /store_parcels/search` |
+| MCP Tools | `/mcp/tools` |
+
+---
+
+### Final Statistics
+
+| Metric | Value |
+|--------|-------|
+| Total Parcels in Production | 26,000 |
+| API Response Time (P95) | < 60ms |
+| Cloud Run Region | europe-west1 (Belgium) |
+| MongoDB Region | europe-west1 (Belgium) |
+| Monthly Cost (estimated) | ~$0 (free tier) |
+
+---
+
+## 🏆 Achievement Summary
+
+| Badge | Achievement | Points |
+|-------|-------------|--------|
+| 🎖️ | GCP Explorer | 100 |
+| 🎖️ | API Unlocker | 100 |
+| 🎖️ | Security Architect | 150 |
+| 🎖️ | Secret Keeper | 100 |
+| 🎖️ | Container Curator | 100 |
+| 🎖️ | Database Administrator | 150 |
+| 🎖️ | Cloud Deployer | 200 |
+| 🏆 | **Full Stack Champion** | 500 |
+| **Total** | | **1400 pts** |
+
+---
+
 ## Next Steps
 
 - [x] Generate 50,000 test parcels (Checkpoint 2) ✅
@@ -1388,8 +1602,9 @@ curl -X POST $CLOUD_RUN_URL/store_parcels/search \
 - [x] Part 2: Write endpoints (PUT, DELETE) ✅
 - [x] Part 3: MCP Controller ✅
 - [x] Part 4: GCP Deployment ✅
+- [x] Part 5: Production Deployment ✅ **LIVE WITH 26K PARCELS!**
 
-**All Parts Complete!**
+**🎉 ALL PARTS COMPLETE! PROJECT DEPLOYED TO PRODUCTION! 🎉**
 
 ---
 

@@ -1379,6 +1379,175 @@ curl -X POST $CLOUD_RUN_URL/store_parcels/search \
 
 ---
 
+## Partie 5 : Déploiement en Production - Le Vrai Voyage 🚀
+
+**Date** : 5 janvier 2026
+
+### Succès Débloqué : Maître du Déploiement Cloud ! 🏆
+
+Nous avons déployé avec succès l'API en production sur Google Cloud Platform avec MongoDB Atlas !
+
+---
+
+### Étape 35 : Configuration du Compte GCP ✅
+
+**Outils Utilisés :**
+- **Google Cloud CLI (gcloud)** - Outil en ligne de commande pour gérer les ressources GCP
+- **Homebrew** - Gestionnaire de paquets macOS pour installer gcloud
+
+**Commandes exécutées :**
+```bash
+# Installer Google Cloud CLI
+brew install --cask google-cloud-sdk
+
+# Se connecter à GCP
+gcloud auth login
+
+# Créer un nouveau projet
+gcloud projects create store-parcels-app --name="Store Parcels API"
+
+# Définir comme projet par défaut
+gcloud config set project store-parcels-app
+```
+
+**Succès :** 🎖️ *Explorateur GCP* - Création de votre premier projet GCP !
+
+---
+
+### Étape 36 : Activer les APIs GCP ✅
+
+**Qu'est-ce qu'une API dans GCP ?**
+Les APIs sont des services que vous "activez" pour utiliser des fonctionnalités spécifiques. C'est comme débloquer des capacités dans un jeu vidéo.
+
+**APIs activées :**
+| API | Fonction | Analogie Jeu |
+|-----|----------|--------------|
+| `run.googleapis.com` | Cloud Run (conteneurs serverless) | 🏃 Capacité Sprint |
+| `artifactregistry.googleapis.com` | Stockage d'images Docker | 📦 Système d'inventaire |
+| `cloudbuild.googleapis.com` | Construction de conteneurs | 🔨 Table de craft |
+| `iam.googleapis.com` | Gestion des permissions | 🔐 Maître des clés |
+
+**Succès :** 🎖️ *Débloqueur d'APIs* - 4 services cloud activés !
+
+---
+
+### Étape 37 : Compte de Service pour GitHub Actions ✅
+
+**Qu'est-ce qu'un Compte de Service ?**
+Un "utilisateur robot" que GitHub Actions utilise pour déployer sur GCP. Il a des permissions spécifiques et un fichier clé JSON pour l'authentification.
+
+**Commandes :**
+```bash
+# Créer le compte robot
+gcloud iam service-accounts create github-actions \
+  --display-name="GitHub Actions"
+
+# Lui donner des permissions
+gcloud projects add-iam-policy-binding store-parcels-app \
+  --member="serviceAccount:github-actions@store-parcels-app.iam.gserviceaccount.com" \
+  --role="roles/run.admin"
+
+# Créer la clé JSON
+gcloud iam service-accounts keys create ~/gcp-sa-key.json \
+  --iam-account=github-actions@store-parcels-app.iam.gserviceaccount.com
+```
+
+**Succès :** 🎖️ *Architecte Sécurité* - Compte de service sécurisé créé !
+
+---
+
+### Étape 38 : Configuration des Secrets GitHub ✅
+
+**Qu'est-ce qu'un Secret GitHub ?**
+Des variables d'environnement chiffrées que GitHub Actions peut utiliser. Elles sont cachées dans les logs et ne peuvent être lues par personne.
+
+**Secrets ajoutés via GitHub CLI :**
+```bash
+gh secret set GCP_PROJECT_ID --body "store-parcels-app"
+gh secret set GCP_SA_KEY < ~/gcp-sa-key.json
+```
+
+**Succès :** 🎖️ *Gardien des Secrets* - Identifiants sécurisés !
+
+---
+
+### Étape 39 : Configuration MongoDB Atlas ✅
+
+**Qu'est-ce que MongoDB Atlas ?**
+Base de données MongoDB hébergée dans le cloud. Le tier gratuit (M0) offre 512MB de stockage - parfait pour l'apprentissage !
+
+**Étapes de configuration :**
+1. Création de compte sur mongodb.com/cloud/atlas
+2. Création d'un cluster M0 gratuit dans `europe-west1` (Belgique)
+3. Création d'utilisateur : `store-parcels-user`
+4. Autorisation IP : `0.0.0.0/0` (tout autoriser - pour simplicité)
+5. Récupération de la chaîne de connexion
+
+**Succès :** 🎖️ *Administrateur Base de Données* - Base cloud configurée !
+
+---
+
+### Étape 40 : Déploiement Cloud Run ✅
+
+**Qu'est-ce que Cloud Run ?**
+Plateforme de conteneurs serverless. Vous lui donnez une image Docker, elle l'exécute. Vous ne payez que lorsque des requêtes arrivent.
+
+**Commande de déploiement finale :**
+```bash
+gcloud run deploy store-parcels-api \
+  --image europe-west1-docker.pkg.dev/store-parcels-app/store-parcels-repo/store-parcels-api:latest \
+  --region europe-west1 \
+  --allow-unauthenticated \
+  --set-env-vars="SPRING_DATA_MONGODB_URI=mongodb+srv://..." \
+  --min-instances=0 \
+  --max-instances=1 \
+  --memory=512Mi
+```
+
+**Succès :** 🎖️ *Déployeur Cloud* - Déployé en production !
+
+---
+
+### URLs de Production
+
+| Endpoint | URL |
+|----------|-----|
+| **URL de Base** | `https://store-parcels-api-1065577871620.europe-west1.run.app` |
+| Health Check | `/store_parcels/health` |
+| Readiness | `/store_parcels/health/ready` |
+| Recherche | `POST /store_parcels/search` |
+| Outils MCP | `/mcp/tools` |
+
+---
+
+### Statistiques Finales
+
+| Métrique | Valeur |
+|----------|--------|
+| Total Colis en Production | 26 000 |
+| Temps de Réponse API (P95) | < 60ms |
+| Région Cloud Run | europe-west1 (Belgique) |
+| Région MongoDB | europe-west1 (Belgique) |
+| Coût Mensuel (estimé) | ~0€ (tier gratuit) |
+
+---
+
+## 🏆 Résumé des Succès
+
+| Badge | Succès | Points |
+|-------|--------|--------|
+| 🎖️ | Explorateur GCP | 100 |
+| 🎖️ | Débloqueur d'APIs | 100 |
+| 🎖️ | Architecte Sécurité | 150 |
+| 🎖️ | Gardien des Secrets | 100 |
+| 🎖️ | Curateur de Conteneurs | 100 |
+| 🎖️ | Administrateur BDD | 150 |
+| 🎖️ | Déployeur Cloud | 200 |
+| 🏆 | **Champion Full Stack** | 500 |
+| **Total** | | **1400 pts** |
+
+---
+
 ## Prochaines Étapes
 
 - [x] Générer 50 000 colis de test (Checkpoint 2) ✅
@@ -1388,8 +1557,9 @@ curl -X POST $CLOUD_RUN_URL/store_parcels/search \
 - [x] Partie 2 : Endpoints d'écriture (PUT, DELETE) ✅
 - [x] Partie 3 : Contrôleur MCP ✅
 - [x] Partie 4 : Déploiement GCP ✅
+- [x] Partie 5 : Déploiement Production ✅ **EN LIGNE AVEC 26K COLIS !**
 
-**Toutes les Parties Terminées !**
+**🎉 TOUTES LES PARTIES TERMINÉES ! PROJET DÉPLOYÉ EN PRODUCTION ! 🎉**
 
 ---
 
